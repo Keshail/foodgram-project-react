@@ -45,7 +45,7 @@ jobs:
       with:
           local: infra/
           remote: /home/${{ secrets.HOST_USER }}/foodgram/
-          host: ${{ secrets.HOST_IP }}
+          host: ${{ secrets.HOST }}
           username: ${{ secrets.HOST_USER }}
           privateKey: ${{ secrets.SSH_KEY }}
 
