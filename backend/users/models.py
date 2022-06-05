@@ -6,7 +6,7 @@ from django.db.models import (CharField, CheckConstraint, EmailField,
 from django.db.models.functions import Length
 from django.utils.translation import gettext_lazy as _
 
-from .validators import MinLenValidator, LineValidator
+from .validators import LineValidator, MinLenValidator
 
 CharField.register_lookup(Length)
 
@@ -60,7 +60,6 @@ class Users(AbstractUser):
                 name='\nusername too short\n',
             ),
         )
-
 
     def __str__(self):
         return f'{self.username}: {self.email}'
