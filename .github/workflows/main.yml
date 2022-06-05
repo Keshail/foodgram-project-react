@@ -86,7 +86,7 @@ jobs:
       uses: docker/login-action@v1
       with:
         username: ${{ secrets.DOCKER_USER }}
-        password: ${{ secrets.DOCKER_PASS }}
+        password: ${{ secrets.DOCKER_PASSWORD }}
 
     - name: Push "foodgram/frontend" to DockerHub
       uses: docker/build-push-action@v2
@@ -106,8 +106,8 @@ jobs:
     - name: remote ssh commands to deploy
       uses: appleboy/ssh-action@master
       with:
-        host: ${{ secrets.HOST_IP }}
-        username: ${{ secrets.HOST_USER }}
+        host: ${{ secrets.HOST }}
+        username: ${{ secrets.USER }}
         key: ${{ secrets.SSH_KEY }}
         script: |
           cd foodgram/
