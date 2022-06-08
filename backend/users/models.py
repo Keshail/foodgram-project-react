@@ -1,5 +1,4 @@
 from api import conf
-
 from django.contrib.auth.models import AbstractUser
 from django.db.models import (CharField, CheckConstraint, EmailField,
                               ManyToManyField, Q)
@@ -54,12 +53,6 @@ class Users(AbstractUser):
         verbose_name = 'Пользователь'
         verbose_name_plural = 'Пользователи'
         ordering = ('username',)
-        constraints = (
-            CheckConstraint(
-                check=Q(username__length__gte=conf.MIN_USERNAME_LENGTH),
-                name='\nusername too short\n',
-            ),
-        )
 
     def __str__(self):
         return f'{self.username}: {self.email}'

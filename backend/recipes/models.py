@@ -1,5 +1,4 @@
 from api.conf import MAX_LEN_RECIPES_CHARFIELD, MAX_LEN_RECIPES_TEXTFIELD
-
 from django.contrib.auth import get_user_model
 from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db.models import (CASCADE, CharField, CheckConstraint,
@@ -37,20 +36,6 @@ class Tag(Model):
         verbose_name = 'Тэг'
         verbose_name_plural = 'Тэги'
         ordering = ('name', )
-        constraints = (
-            CheckConstraint(
-                check=Q(name__length__gt=0),
-                name='\n%(app_label)s_%(class)s_name is empty\n',
-            ),
-            CheckConstraint(
-                check=Q(color__length__gt=0),
-                name='\n%(app_label)s_%(class)s_color is empty\n',
-            ),
-            CheckConstraint(
-                check=Q(slug__length__gt=0),
-                name='\n%(app_label)s_%(class)s_slug is empty\n',
-            ),
-        )
 
     def __str__(self) -> str:
         return f'{self.name} (цвет: {self.color})'
@@ -58,7 +43,7 @@ class Tag(Model):
 
 class Ingredient(Model):
     name = CharField(
-        verbose_name='Ингридиент',
+        verbose_name='Ингредиент',
         max_length=MAX_LEN_RECIPES_CHARFIELD,
     )
     measurement_unit = CharField(
@@ -67,23 +52,9 @@ class Ingredient(Model):
     )
 
     class Meta:
-        verbose_name = 'Ингридиент'
-        verbose_name_plural = 'Ингридиенты'
+        verbose_name = 'Ингредиент'
+        verbose_name_plural = 'Ингредиенты'
         ordering = ('name', )
-        constraints = (
-            UniqueConstraint(
-                fields=('name', 'measurement_unit'),
-                name='unique_for_ingredient'
-            ),
-            CheckConstraint(
-                check=Q(name__length__gt=0),
-                name='\n%(app_label)s_%(class)s_name is empty\n',
-            ),
-            CheckConstraint(
-                check=Q(measurement_unit__length__gt=0),
-                name='\n%(app_label)s_%(class)s_measurement_unit is empty\n',
-            ),
-        )
 
     def __str__(self) -> str:
         return f'{self.name} {self.measurement_unit}'
@@ -102,7 +73,7 @@ class Recipe(Model):
     )
     favorite = ManyToManyField(
         verbose_name='Понравившиеся рецепты',
-        related_name='favorites',
+        related_name='recipes',
         to=User,
     )
     tags = ManyToManyField(
@@ -118,7 +89,7 @@ class Recipe(Model):
     )
     cart = ManyToManyField(
         verbose_name='Список покупок',
-        related_name='carts',
+        related_name='recipes',
         to=User,
     )
     pub_date = DateTimeField(
@@ -152,16 +123,6 @@ class Recipe(Model):
         verbose_name = 'Рецепт'
         verbose_name_plural = 'Рецепты'
         ordering = ('-pub_date', )
-        constraints = (
-            UniqueConstraint(
-                fields=('name', 'author'),
-                name='unique_for_author'
-            ),
-            CheckConstraint(
-                check=Q(name__length__gt=0),
-                name='\n%(app_label)s_%(class)s_name is empty\n',
-            ),
-        )
 
     def __str__(self) -> str:
         return f'{self.name}. Автор: {self.author.username}'
@@ -170,13 +131,13 @@ class Recipe(Model):
 class AmountIngredient(Model):
     recipe = ForeignKey(
         verbose_name='В каких рецептах',
-        related_name='ingredient',
+        related_name='ingredients',
         to=Recipe,
         on_delete=CASCADE,
     )
     ingredients = ForeignKey(
         verbose_name='Связанные ингредиенты',
-        related_name='recipe',
+        related_name='ingredients',
         to=Ingredient,
         on_delete=CASCADE,
     )
@@ -194,8 +155,8 @@ class AmountIngredient(Model):
     )
 
     class Meta:
-        verbose_name = 'Ингридиент'
-        verbose_name_plural = 'Количество ингридиентов'
+        verbose_name = 'Ингредиент'
+        verbose_name_plural = 'Количество Ингредиентов'
         ordering = ('recipe', )
         constraints = (
             UniqueConstraint(

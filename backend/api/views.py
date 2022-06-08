@@ -1,14 +1,12 @@
-from datetime import datetime as dt
+import datetime
 from urllib.parse import unquote
 
 from django.contrib.auth import get_user_model
 from django.db.models import F, Sum
 from django.http.response import HttpResponse
-
+from django_filters.rest_framework import DjangoFilterBackend
 from djoser.views import UserViewSet as DjoserUserViewSet
-
 from recipes.models import AmountIngredient, Ingredient, Recipe, Tag
-
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.status import HTTP_400_BAD_REQUEST, HTTP_401_UNAUTHORIZED
@@ -57,6 +55,7 @@ class IngredientViewSet(ReadOnlyModelViewSet):
     queryset = Ingredient.objects.all()
     serializer_class = IngredientSerializer
     permission_classes = (AdminOrReadOnly,)
+    filter_backends = [DjangoFilterBackend, ]
 
     def get_queryset(self):
         name = self.request.query_params.get(conf.SEARCH_ING_NAME)
@@ -82,6 +81,7 @@ class RecipeViewSet(ModelViewSet, AddDelViewMixin):
     permission_classes = (AuthorStaffOrReadOnly,)
     pagination_class = PageLimitPagination
     add_serializer = ShortRecipeSerializer
+    filter_backends = [DjangoFilterBackend, ]
 
     def get_queryset(self):
         queryset = self.queryset
@@ -131,7 +131,7 @@ class RecipeViewSet(ModelViewSet, AddDelViewMixin):
         ).values(
             ingredient=F('ingredients__name'),
             measure=F('ingredients__measurement_unit')
-        ).annotate(amount=Sum('amount'))
+        ).annotate(total=Sum('total'))
 
         filename = f'{user.username}_shopping_list.txt'
         shopping_list = (
