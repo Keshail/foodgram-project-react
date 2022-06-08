@@ -1,9 +1,9 @@
-import datetime
 from urllib.parse import unquote
 
 from django.contrib.auth import get_user_model
 from django.db.models import F, Sum
 from django.http.response import HttpResponse
+from django.utils import timezone
 from django_filters.rest_framework import DjangoFilterBackend
 from djoser.views import UserViewSet as DjoserUserViewSet
 from recipes.models import AmountIngredient, Ingredient, Recipe, Tag
