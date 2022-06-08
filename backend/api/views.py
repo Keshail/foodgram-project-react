@@ -136,7 +136,7 @@ class RecipeViewSet(ModelViewSet, AddDelViewMixin):
         filename = f'{user.username}_shopping_list.txt'
         shopping_list = (
             f'Список покупок для:\n\n{user.first_name}\n\n'
-            f'{dt.now().strftime(conf.DATE_TIME_FORMAT)}\n\n'
+            f'{timezone.now().strftime(conf.DATE_TIME_FORMAT)}\n\n'
         )
         for ing in ingredients:
             shopping_list += (
