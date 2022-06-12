@@ -1,9 +1,8 @@
+from api import conf
 from django.contrib.auth.models import AbstractUser
 from django.db.models import CharField, EmailField, ManyToManyField
 from django.db.models.functions import Length
 from django.utils.translation import gettext_lazy as _
-
-from api import conf
 
 from .validators import LineValidator, MinLenValidator
 

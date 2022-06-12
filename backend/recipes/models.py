@@ -1,3 +1,4 @@
+from api.conf import MAX_LEN_RECIPES_CHARFIELD, MAX_LEN_RECIPES_TEXTFIELD
 from django.contrib.auth import get_user_model
 from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db.models import (CASCADE, CharField, DateTimeField, ForeignKey,
@@ -6,7 +7,6 @@ from django.db.models import (CASCADE, CharField, DateTimeField, ForeignKey,
                               UniqueConstraint)
 from django.db.models.functions import Length
 
-from api.conf import MAX_LEN_RECIPES_CHARFIELD, MAX_LEN_RECIPES_TEXTFIELD
 
 CharField.register_lookup(Length)
 
