@@ -1,7 +1,8 @@
 from string import hexdigits
 
-from recipes.models import AmountIngredient
 from rest_framework.serializers import ValidationError
+
+from recipes.models import AmountIngredient
 
 
 def recipe_amount_ingredients_set(recipe, ingredients):
@@ -20,7 +21,6 @@ def check_value_validate(value, klass=None):
         )
     if klass:
         return klass.objects.filter(id=value).exists()
-
 
 
 def is_hex_color(value):

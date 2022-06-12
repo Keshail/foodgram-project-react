@@ -1,9 +1,11 @@
 from django.contrib.auth import get_user_model
 from django.db.models import F
 from drf_extra_fields.fields import Base64ImageField
-from recipes.models import Ingredient, Recipe, Tag
 from rest_framework.serializers import (ModelSerializer, SerializerMethodField,
                                         ValidationError)
+from rest_framework.validators import UniqueTogetherValidator
+
+from recipes.models import Ingredient, Recipe, Tag
 
 from .conf import MAX_LEN_USERS_CHARFIELD, MIN_USERNAME_LENGTH
 from .services import (check_value_validate, is_hex_color,
@@ -140,6 +142,13 @@ class RecipeSerializer(ModelSerializer):
             'is_favorite',
             'is_shopping_cart',
         )
+        validators = [
+            UniqueTogetherValidator(
+                queryset=Recipe.objects.all(),
+                fields=('user', 'recipe'),
+                message='Рецепт уже есть'
+            )
+        ]
 
     def get_ingredients(self, obj):
         ingredients = obj.ingredients.values(
@@ -160,16 +169,10 @@ class RecipeSerializer(ModelSerializer):
         return user.carts.filter(id=obj.id).exists()
 
     def validate(self, data):
-        name = str(self.data.get('name')).strip()
-        tags = self.data.get('tags')
-        ingredients = self.data.get('ingredients')
+        name = str(data['name']).strip()
+        tags = data['tags']
+        ingredients = data['ingredients']
         values_as_list = (tags, ingredients)
-
-        for ingredient in ingredients:
-            if int(ingredient['amount']) <= 0:
-                raise serializers.ValidationError({
-                    'ingredients': ('Число игредиентов должно быть больше 0')
-                })
 
         for value in values_as_list:
             if not isinstance(value, list):
@@ -213,18 +216,7 @@ class RecipeSerializer(ModelSerializer):
 
         recipe.image = validated_data.get(
             'image', recipe.image)
-        super().update('name', recipe.name)
-        super().update('text', recipe.text)
-        super().update('cooking_time', recipe.cooking_time)
-
-
-        
-        #recipe.name = validated_data.get(
-        #   'name', recipe.name)
-        #recipe.text = validated_data.get(
-        #   'text', recipe.text)
-        #recipe.cooking_time = validated_data.get(
-        #   'cooking_time', recipe.cooking_time)
+        super().update(recipe, validated_data)
 
         if tags:
             recipe.tags.clear()

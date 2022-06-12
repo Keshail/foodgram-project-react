@@ -1,12 +1,12 @@
-from api.conf import MAX_LEN_RECIPES_CHARFIELD, MAX_LEN_RECIPES_TEXTFIELD
 from django.contrib.auth import get_user_model
 from django.core.validators import MaxValueValidator, MinValueValidator
-from django.db.models import (CASCADE, CharField, CheckConstraint,
-                              DateTimeField, ForeignKey, ImageField,
-                              ManyToManyField, Model,
-                              PositiveSmallIntegerField, Q, TextField,
+from django.db.models import (CASCADE, CharField, DateTimeField, ForeignKey,
+                              ImageField, ManyToManyField, Model,
+                              PositiveSmallIntegerField, TextField,
                               UniqueConstraint)
 from django.db.models.functions import Length
+
+from api.conf import MAX_LEN_RECIPES_CHARFIELD, MAX_LEN_RECIPES_TEXTFIELD
 
 CharField.register_lookup(Length)
 
@@ -73,7 +73,7 @@ class Recipe(Model):
     )
     favorite = ManyToManyField(
         verbose_name='Понравившиеся рецепты',
-        related_name='recipes',
+        related_name='favorites',
         to=User,
     )
     tags = ManyToManyField(
@@ -89,7 +89,7 @@ class Recipe(Model):
     )
     cart = ManyToManyField(
         verbose_name='Список покупок',
-        related_name='recipes',
+        related_name='carts',
         to=User,
     )
     pub_date = DateTimeField(
@@ -131,7 +131,7 @@ class Recipe(Model):
 class AmountIngredient(Model):
     recipe = ForeignKey(
         verbose_name='В каких рецептах',
-        related_name='ingredients',
+        related_name='recipes',
         to=Recipe,
         on_delete=CASCADE,
     )
