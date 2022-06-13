@@ -57,6 +57,7 @@ class IngredientViewSet(ReadOnlyModelViewSet):
     serializer_class = IngredientSerializer
     permission_classes = (AdminOrReadOnly,)
     filter_backends = [DjangoFilterBackend, ]
+    filterset_fields = ['^name',]
 
 
 class RecipeViewSet(ModelViewSet, AddDelViewMixin):
@@ -66,6 +67,8 @@ class RecipeViewSet(ModelViewSet, AddDelViewMixin):
     pagination_class = PageLimitPagination
     add_serializer = ShortRecipeSerializer
     filter_backends = [DjangoFilterBackend, ]
+    filterset_fields = ['author', 'cart', 'favorite']
+
 
     @action(methods=conf.ACTION_METHODS, detail=True)
     def favorite(self, request, pk):

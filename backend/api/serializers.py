@@ -1,5 +1,5 @@
-from django.contrib.auth import get_user_model
 from django.db.models import F
+from django.contrib.auth import get_user_model
 
 from drf_extra_fields.fields import Base64ImageField
 
@@ -188,6 +188,10 @@ class RecipeSerializer(ModelSerializer):
         valid_ingredients = []
         for ing in ingredients:
             ing_id = ing.get('id')
+            if ing_id in valid_ingredients:
+                raise ValidationError({
+                    'ingredients': 'Такой ингредиент уже выбран'
+                })
             ingredient = check_value_validate(ing_id, Ingredient)
 
             amount = ing.get('amount')
@@ -228,5 +232,4 @@ class RecipeSerializer(ModelSerializer):
             recipe.ingredients.clear()
             recipe_amount_ingredients_set(recipe, ingredients)
 
-        recipe.save()
         return recipe
