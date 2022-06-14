@@ -72,8 +72,8 @@ class RecipeViewSet(ModelViewSet, AddDelViewMixin):
 
     def get_serializer_class(self):
         if self.request.method == 'GET':
-            return ShowRecipeSerializer
-        return CreateRecipeSerializer
+            return ShortRecipeSerializer
+        return RecipeSerializer
 
     def get_serializer_context(self):
         context = super().get_serializer_context()
