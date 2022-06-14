@@ -2,25 +2,26 @@ from django.contrib.auth import get_user_model
 from django.db.models import F, Sum
 from django.http.response import HttpResponse
 from django.utils import timezone
-
 from django_filters.rest_framework import DjangoFilterBackend
-
 from djoser.views import UserViewSet as DjoserUserViewSet
-
-from recipes.models import AmountIngredient, Ingredient, Recipe, Tag
-
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.status import HTTP_400_BAD_REQUEST, HTTP_401_UNAUTHORIZED
 from rest_framework.viewsets import ModelViewSet, ReadOnlyModelViewSet
 
+from recipes.models import AmountIngredient, Ingredient, Recipe, Tag
 from . import conf
+from .filters import RecipeFilter, IngredientFilter
 from .mixins import AddDelViewMixin
 from .paginators import PageLimitPagination
 from .permissions import AdminOrReadOnly, AuthorStaffOrReadOnly
-from .serializers import (IngredientSerializer, RecipeSerializer,
-                          ShortRecipeSerializer, TagSerializer,
-                          UserSubscribeSerializer)
+from .serializers import (
+    IngredientSerializer, 
+    RecipeSerializer,
+    ShortRecipeSerializer,
+    TagSerializer,
+    UserSubscribeSerializer
+)
 
 User = get_user_model()
 
@@ -57,7 +58,7 @@ class IngredientViewSet(ReadOnlyModelViewSet):
     serializer_class = IngredientSerializer
     permission_classes = (AdminOrReadOnly,)
     filter_backends = [DjangoFilterBackend, ]
-    filterset_fields = ['^name', ]
+    filterset_class = IngredientFilter
 
 
 class RecipeViewSet(ModelViewSet, AddDelViewMixin):
@@ -67,7 +68,17 @@ class RecipeViewSet(ModelViewSet, AddDelViewMixin):
     pagination_class = PageLimitPagination
     add_serializer = ShortRecipeSerializer
     filter_backends = [DjangoFilterBackend, ]
-    filterset_fields = ['author', 'cart', 'favorite']
+    filterset_class = RecipeFilter
+
+    def get_serializer_class(self):
+        if self.request.method == 'GET':
+            return ShowRecipeSerializer
+        return CreateRecipeSerializer
+
+    def get_serializer_context(self):
+        context = super().get_serializer_context()
+        context.update({'request': self.request})
+        return context
 
     @action(methods=conf.ACTION_METHODS, detail=True)
     def favorite(self, request, pk):
