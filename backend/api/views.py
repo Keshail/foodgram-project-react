@@ -16,7 +16,7 @@ from .mixins import AddDelViewMixin
 from .paginators import PageLimitPagination
 from .permissions import AdminOrReadOnly, AuthorStaffOrReadOnly
 from .serializers import (
-    IngredientSerializer, 
+    IngredientSerializer,
     RecipeSerializer,
     ShortRecipeSerializer,
     TagSerializer,

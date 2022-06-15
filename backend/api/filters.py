@@ -17,9 +17,9 @@ class RecipeFilter(filters.FilterSet):
     class Meta:
         model = Recipe
         fields = (
-            'is_favorited', 
-            'is_in_shopping_cart', 
-            'author', 
+            'is_favorited',
+            'is_in_shopping_cart',
+            'author',
             'tags'
         )
 
@@ -40,7 +40,7 @@ class RecipeFilter(filters.FilterSet):
 
 class IngredientFilter(filters.FilterSet):
     name = filters.CharFilter(
-        field_name='name', 
+        field_name='name',
         lookup_expr='icontains'
     )
 
