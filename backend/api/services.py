@@ -1,5 +1,6 @@
-from rest_framework.serializers import ValidationError
 from string import hexdigits
+
+from rest_framework.serializers import ValidationError
 
 from recipes.models import AmountIngredient
 
