@@ -1,5 +1,5 @@
 from django.contrib.auth import get_user_model
-from django.db.models import F, Sum
+from django.db.models import F, Sum, Exists, OuterRef
 from django.http.response import HttpResponse
 from django.utils import timezone
 from djoser.views import UserViewSet as DjoserUserViewSet
@@ -67,15 +67,8 @@ class RecipeViewSet(ModelViewSet, AddDelViewMixin):
     add_serializer = ShortRecipeSerializer
     filterset_class = RecipeFilter
 
-    def get_serializer_class(self):
-        if self.request.method == 'GET':
-            return ShortRecipeSerializer
-        return RecipeSerializer
-
-    def get_serializer_context(self):
-        context = super().get_serializer_context()
-        context.update({'request': self.request})
-        return context
+    def perform_create(self, serializer):
+        return serializer.save(author=self.request.user)
 
     @action(methods=conf.ACTION_METHODS, detail=True)
     def favorite(self, request, pk):
