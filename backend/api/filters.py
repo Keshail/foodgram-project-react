@@ -6,7 +6,7 @@ from users.models import Users
 
 class IngredientFilter(filters.FilterSet):
     name = filters.CharFilter(
-        field_name='name', 
+        field_name='name',
         lookup_expr='istartswith'
     )
 
