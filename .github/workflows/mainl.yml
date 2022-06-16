@@ -123,7 +123,7 @@ jobs:
           echo DB_HOST=${{ secrets.DB_HOST }} >> .env
           echo DB_PORT=${{ secrets.DB_PORT }} >> .env
           sudo docker-compose stop
-          sudo docker rm foodgram_frontend_1
+          sudo docker rm foodgram_front_1
           sudo docker rm foodgram_backend_1
           sudo docker rmi ${{ secrets.DOCKER_USERNAME }}/foodgram_front
           sudo docker rmi ${{ secrets.DOCKER_USERNAME }}/foodgram_backend
