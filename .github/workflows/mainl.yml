@@ -70,7 +70,7 @@ jobs:
       with:
         context: backend/
         push: true
-        tags: ${{ secrets.DOCKER_USERNAME }}/foodgram_backend:latest
+        tags: ${{ secrets.DOCKER_USERNAME }}/foodgram_back:latest
 
   build_push_frontend_to_DockerHub:
     name: Building front image and pushing it to Docker Hub
@@ -126,7 +126,7 @@ jobs:
           sudo docker rm foodgram_1
           sudo docker rm foodgram_backend_1
           sudo docker rmi ${{ secrets.DOCKER_USERNAME }}/foodgram
-          sudo docker rmi ${{ secrets.DOCKER_USERNAME }}/foodgram_backend
+          sudo docker rmi ${{ secrets.DOCKER_USERNAME }}/foodgram_back
           sudo docker-compose up -d
   
   send_message:
