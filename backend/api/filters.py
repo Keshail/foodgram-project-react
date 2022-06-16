@@ -20,7 +20,7 @@ class RecipeFilter(filters.FilterSet):
         field_name='tags__slug'
     )
     author = filters.ModelChoiceFilter(
-        queryset=User.objects.all()
+        queryset=Users.objects.all()
     )
     is_favorited = filters.BooleanFilter(
         method='get_is_favorited'
