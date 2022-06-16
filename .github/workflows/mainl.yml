@@ -124,7 +124,7 @@ jobs:
           echo DB_PORT=${{ secrets.DB_PORT }} >> .env
           sudo docker-compose stop
           sudo docker rm foodgram_1
-          sudo docker rm foodgram_backend_1
+          sudo docker rm foodgram_back_1
           sudo docker rmi ${{ secrets.DOCKER_USERNAME }}/foodgram
           sudo docker rmi ${{ secrets.DOCKER_USERNAME }}/foodgram_back
           sudo docker-compose up -d
