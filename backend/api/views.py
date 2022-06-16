@@ -2,7 +2,6 @@ from django.contrib.auth import get_user_model
 from django.db.models import F, Sum
 from django.http.response import HttpResponse
 from django.utils import timezone
-from django_filters.rest_framework import DjangoFilterBackend
 from djoser.views import UserViewSet as DjoserUserViewSet
 from rest_framework.decorators import action
 from rest_framework.response import Response
@@ -57,7 +56,6 @@ class IngredientViewSet(ReadOnlyModelViewSet):
     queryset = Ingredient.objects.all()
     serializer_class = IngredientSerializer
     permission_classes = (AdminOrReadOnly,)
-    filter_backends = [DjangoFilterBackend, ]
     filterset_class = IngredientFilter
 
 
@@ -67,21 +65,17 @@ class RecipeViewSet(ModelViewSet, AddDelViewMixin):
     permission_classes = (AuthorStaffOrReadOnly,)
     pagination_class = PageLimitPagination
     add_serializer = ShortRecipeSerializer
-    filter_backends = [DjangoFilterBackend, ]
     filterset_class = RecipeFilter
 
-    def perform_create(self, serializer):
-        return serializer.save(author=self.request.user)
+    def get_serializer_class(self):
+        if self.request.method == 'GET':
+            return ShortRecipeSerializer
+        return RecipeSerializer
 
-    # def get_serializer_class(self):
-    #    if self.request.method == 'GET':
-    #        return ShortRecipeSerializer
-    #    return RecipeSerializer
-
-    # def get_serializer_context(self):
-    #    context = super().get_serializer_context()
-    #    context.update({'request': self.request})
-    #    return context
+    def get_serializer_context(self):
+        context = super().get_serializer_context()
+        context.update({'request': self.request})
+        return context
 
     @action(methods=conf.ACTION_METHODS, detail=True)
     def favorite(self, request, pk):
