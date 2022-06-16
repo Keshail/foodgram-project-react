@@ -15,11 +15,7 @@ services:
       - ./.env
 
   backend:
-<<<<<<< HEAD
     image: k4n1/foodgram_back:latest
-=======
-    image: k4n1/foodgram_backend:latest
->>>>>>> f19c3d4e2e3419b99a900a14929e187350b813a4
     restart: always
     command: >
       bash -c "python manage.py migrate &&
