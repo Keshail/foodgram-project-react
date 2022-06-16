@@ -1,5 +1,5 @@
 from django.contrib.auth import get_user_model
-from django.db.models import F, Sum, Exists, OuterRef
+from django.db.models import F, Sum
 from django.http.response import HttpResponse
 from django.utils import timezone
 from djoser.views import UserViewSet as DjoserUserViewSet
