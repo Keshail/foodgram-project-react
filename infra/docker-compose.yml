@@ -2,7 +2,7 @@ version: '3.3'
 services:
 
   frontend:
-    image: k4n1/foodgram_front:latest
+    image: k4n1/foodgram:latest
     volumes:
       - ./frontend/:/app/result_build/
 
