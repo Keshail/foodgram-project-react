@@ -93,7 +93,7 @@ jobs:
       with:
         context: frontend/
         push: true
-        tags: ${{ secrets.DOCKER_USERNAME }}/foodgram_front:latest
+        tags: ${{ secrets.DOCKER_USERNAME }}/foodgram:latest
 
   deploy:
     runs-on: ubuntu-20.04
@@ -123,9 +123,9 @@ jobs:
           echo DB_HOST=${{ secrets.DB_HOST }} >> .env
           echo DB_PORT=${{ secrets.DB_PORT }} >> .env
           sudo docker-compose stop
-          sudo docker rm foodgram_front_1
+          sudo docker rm foodgram_1
           sudo docker rm foodgram_backend_1
-          sudo docker rmi ${{ secrets.DOCKER_USERNAME }}/foodgram_front
+          sudo docker rmi ${{ secrets.DOCKER_USERNAME }}/foodgram
           sudo docker rmi ${{ secrets.DOCKER_USERNAME }}/foodgram_backend
           sudo docker-compose up -d
   
