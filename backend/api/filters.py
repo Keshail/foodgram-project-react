@@ -1,26 +1,11 @@
-import django_filters as filters
+from django_filters import rest_framework as filters 
 
-from recipes.models import Ingredient, Recipe
-from users.models import Users
-
-
-class IngredientFilter(filters.FilterSet):
-    name = filters.CharFilter(
-        field_name='name',
-        lookup_expr='istartswith'
-    )
-
-    class Meta:
-        model = Ingredient
-        fields = ('name', 'measurement_unit')
+from recipes.models import Ingredient, Recipe 
 
 
 class RecipeFilter(filters.FilterSet):
     tags = filters.AllValuesMultipleFilter(
-        field_name='tags__slug'
-    )
-    author = filters.ModelChoiceFilter(
-        queryset=Users.objects.all()
+        field_name='receipttag__tag__slug'
     )
     is_favorited = filters.BooleanFilter(
         method='get_is_favorited'
@@ -31,20 +16,40 @@ class RecipeFilter(filters.FilterSet):
 
     class Meta:
         model = Recipe
-        fields = ['tags', 'author', 'is_favorited', 'is_in_shopping_cart']
+        fields = (
+            'is_favorited',
+            'is_in_shopping_cart',
+            'author',
+            'tags'
+        )
 
     def get_is_favorited(self, queryset, name, value):
         user = self.request.user
         if user.is_anonymous:
             return queryset
         if value:
-            return queryset.filter(favorites__user=user)
-        return queryset
+            return Recipe.objects.filter(
+                favorites__user=self.request.user
+            )
+        return Recipe.objects.all()
 
     def get_is_in_shopping_cart(self, queryset, name, value):
         user = self.request.user
         if user.is_anonymous:
             return queryset
         if value:
-            return queryset.filter(carts__user=user)
-        return queryset
+            return Recipe.objects.filter(
+                carts__user=self.request.user
+            )
+        return Recipe.objects.all() 
+
+
+class IngredientFilter(filters.FilterSet): 
+    name = filters.CharFilter(
+        field_name='name',
+        lookup_expr='icontains'
+    )
+
+    class Meta:
+        model = Ingredient
+        fields = ('name',)
