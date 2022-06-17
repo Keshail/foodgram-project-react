@@ -68,7 +68,7 @@ class RecipeViewSet(ModelViewSet, AddDelViewMixin):
     filterset_class = RecipeFilter
 
     def get_serializer_class(self):
-        if self.request.method == 'GET':
+        if self.request.methodin in ('POST', 'PUT', 'PATCH'):
             return ShortRecipeSerializer
         return RecipeSerializer
 
