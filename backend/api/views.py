@@ -67,8 +67,15 @@ class RecipeViewSet(ModelViewSet, AddDelViewMixin):
     add_serializer = ShortRecipeSerializer
     filterset_class = RecipeFilter
 
-    def perform_create(self, serializer):
-        return serializer.save(author=self.request.user)
+    def get_serializer_class(self):
+        if self.request.method == 'GET':
+            return ShortRecipeSerializer
+        return RecipeSerializer
+
+    def get_serializer_context(self):
+        context = super().get_serializer_context()
+        context.update({'request': self.request})
+        return context
 
     @action(methods=conf.ACTION_METHODS, detail=True)
     def favorite(self, request, pk):
