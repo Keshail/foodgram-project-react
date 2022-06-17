@@ -44,7 +44,7 @@ class RecipeFilter(filters.FilterSet):
         return Recipe.objects.all()
 
 
-class IngredientFilter(filters.FilterSet): 
+class IngredientFilter(filters.FilterSet):
     name = filters.CharFilter(
         field_name='name',
         lookup_expr='icontains'

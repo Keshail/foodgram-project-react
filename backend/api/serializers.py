@@ -6,7 +6,6 @@ from rest_framework.serializers import (
     SerializerMethodField,
     ValidationError
 )
-from rest_framework.validators import UniqueTogetherValidator
 
 from recipes.models import Ingredient, Recipe, Tag
 from .conf import MAX_LEN_USERS_CHARFIELD, MIN_USERNAME_LENGTH
@@ -146,7 +145,6 @@ class RecipeSerializer(ModelSerializer):
             'is_favorite',
             'is_shopping_cart',
         )
-
 
     def get_ingredients(self, obj):
         ingredients = obj.ingredients.values(

@@ -1,4 +1,3 @@
-import django_filters.rest_framework
 from django.contrib.auth import get_user_model
 from django.db.models import F, Sum
 from django.http.response import HttpResponse
@@ -7,14 +6,8 @@ from django.shortcuts import get_object_or_404
 from django_filters.rest_framework import DjangoFilterBackend
 from djoser.views import UserViewSet as DjoserUserViewSet
 from rest_framework.decorators import action
-from rest_framework.permissions import SAFE_METHODS
 from rest_framework.response import Response
-from rest_framework.status import (
-    HTTP_400_BAD_REQUEST, 
-    HTTP_401_UNAUTHORIZED, 
-    HTTP_201_CREATED, 
-    HTTP_204_NO_CONTENT
-)
+from rest_framework import status
 from rest_framework.viewsets import ModelViewSet, ReadOnlyModelViewSet
 
 from recipes.models import AmountIngredient, Ingredient, Recipe, Tag
