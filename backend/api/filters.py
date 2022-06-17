@@ -1,6 +1,6 @@
-from django_filters import rest_framework as filters 
+from django_filters import rest_framework as filters
 
-from recipes.models import Ingredient, Recipe 
+from recipes.models import Ingredient, Recipe
 
 
 class RecipeFilter(filters.FilterSet):
@@ -41,10 +41,10 @@ class RecipeFilter(filters.FilterSet):
             return Recipe.objects.filter(
                 carts__user=self.request.user
             )
-        return Recipe.objects.all() 
+        return Recipe.objects.all()
 
 
-class IngredientFilter(filters.FilterSet): 
+class IngredientFilter(filters.FilterSet):
     name = filters.CharFilter(
         field_name='name',
         lookup_expr='icontains'
