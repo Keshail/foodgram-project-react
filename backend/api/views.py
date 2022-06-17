@@ -65,7 +65,7 @@ class RecipeViewSet(ModelViewSet, AddDelViewMixin):
     permission_classes = (AuthorStaffOrReadOnly,)
     pagination_class = PageLimitPagination
     add_serializer = ShortRecipeSerializer
-    filterset_class = RecipeFilter
+    filter_class = RecipeFilter
 
     def get_serializer_class(self):
         if self.request.methodin == 'GET':
