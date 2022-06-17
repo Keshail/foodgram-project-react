@@ -146,13 +146,7 @@ class RecipeSerializer(ModelSerializer):
             'is_favorite',
             'is_shopping_cart',
         )
-        validators = [
-            UniqueTogetherValidator(
-                queryset=Recipe.objects.all(),
-                fields=('user', 'recipe'),
-                message='Рецепт уже есть'
-            )
-        ]
+
 
     def get_ingredients(self, obj):
         ingredients = obj.ingredients.values(

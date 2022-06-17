@@ -1,11 +1,20 @@
+import django_filters.rest_framework
 from django.contrib.auth import get_user_model
 from django.db.models import F, Sum
 from django.http.response import HttpResponse
 from django.utils import timezone
+from django.shortcuts import get_object_or_404
+from django_filters.rest_framework import DjangoFilterBackend
 from djoser.views import UserViewSet as DjoserUserViewSet
 from rest_framework.decorators import action
+from rest_framework.permissions import SAFE_METHODS
 from rest_framework.response import Response
-from rest_framework.status import HTTP_400_BAD_REQUEST, HTTP_401_UNAUTHORIZED
+from rest_framework.status import (
+    HTTP_400_BAD_REQUEST, 
+    HTTP_401_UNAUTHORIZED, 
+    HTTP_201_CREATED, 
+    HTTP_204_NO_CONTENT
+)
 from rest_framework.viewsets import ModelViewSet, ReadOnlyModelViewSet
 
 from recipes.models import AmountIngredient, Ingredient, Recipe, Tag
@@ -56,19 +65,47 @@ class IngredientViewSet(ReadOnlyModelViewSet):
     queryset = Ingredient.objects.all()
     serializer_class = IngredientSerializer
     permission_classes = (AdminOrReadOnly,)
-    filterset_class = IngredientFilter
+    filter_backends = [IngredientFilter]
+    search_fields = ('^name',)
 
 
 class RecipeViewSet(ModelViewSet, AddDelViewMixin):
-    queryset = Recipe.objects.select_related('author')
+    queryset = Recipe.objects.all()
     serializer_class = RecipeSerializer
     permission_classes = (AuthorStaffOrReadOnly,)
     pagination_class = PageLimitPagination
     add_serializer = ShortRecipeSerializer
+    filter_backends = [DjangoFilterBackend]
     filterset_class = RecipeFilter
 
+    def get_serializer_class(self):
+        if self.action in ('list', 'retrieve'):
+            return ShortRecipeSerializer
+        return RecipeSerializer
+
     def perform_create(self, serializer):
-        return serializer.save(author=self.request.user)
+        serializer.save(author=self.request.user)
+
+    def perform_update(self, serializer):
+        serializer.save(author=self.request.user)
+
+    def add(self, request, pk, serializers):
+        data = {'user': request.user.id, 'recipe': pk}
+        serializer = serializers(
+            data=data, context={'request': request}
+        )
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+    def cancel(self, request, pk, model):
+        user = request.user
+        recipe = get_object_or_404(Recipe, id=pk)
+        obj_cart = get_object_or_404(
+            model, user=user, recipe=recipe
+        )
+        obj_cart.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
 
     @action(methods=conf.ACTION_METHODS, detail=True)
     def favorite(self, request, pk):
