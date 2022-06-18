@@ -1,5 +1,7 @@
 # FOODGRAM
 Сайт - http://84.201.177.244
+##Про регистрацию 
+-Имя и Фамилия только в Русских буквах или Латинских
 
 [![foodgram-project workflow](https://github.com/Keshail/foodgram-project-react/actions/workflows/mainl.yml/badge.svg)](https://github.com/Keshail/foodgram-project-react/actions/workflows/main.yml)
 
