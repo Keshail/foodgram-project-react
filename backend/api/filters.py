@@ -23,9 +23,15 @@ class RecipeFilter(filters.FilterSet):
             'tags'
         )
 
+    def get_author(self, queryset, author):
+        author = self.request.query_params.get('author')
+        if author:
+            queryset = queryset.filter(author=author)
+        return queryset
+
     def get_is_favorited(self, queryset, name, value):
-        user = self.request.user
-        if user.is_anonymous:
+        users = self.request.user
+        if users.is_anonymous:
             return queryset
         if value:
             return Recipe.objects.filter(
@@ -34,8 +40,8 @@ class RecipeFilter(filters.FilterSet):
         return Recipe.objects.all()
 
     def get_is_in_shopping_cart(self, queryset, name, value):
-        user = self.request.user
-        if user.is_anonymous:
+        users = self.request.user
+        if users.is_anonymous:
             return queryset
         if value:
             return Recipe.objects.filter(
