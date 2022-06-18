@@ -71,12 +71,12 @@ scp infra/* <server user>@<server IP>:/home/<server user>/foodgram/
 ```
 sudo docker-compose up -d
 ```
-##Приятного пользования :)
+## Приятного пользования :)
 При необходимости вы можете использовать предложенный список ингредиентов для написания рецептов. Загрузите его в базу данных с помощью следующей команды
 ```
 sudo docker exec -it foodgram_backend_1 python manage.py loaddata data/dump.json
 ```
-##Backend by:
+## Backend by:
 https://github.com/Keshail
-##Frontend by:
+## Frontend by:
 https://github.com/yandex-praktikum/foodgram-project-react
