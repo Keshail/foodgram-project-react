@@ -64,10 +64,6 @@ class UserSerializer(ModelSerializer):
                 'Длина username допустима от '
                 f'{MIN_USERNAME_LENGTH} до {MAX_LEN_USERS_CHARFIELD}'
             )
-        if not username.isalpha():
-            raise ValidationError(
-                'В username допустимы только буквы.'
-            )
         return username.capitalize()
 
 
