@@ -1,18 +1,16 @@
 from django.contrib.auth import get_user_model
 from django.db.models import F
+
 from drf_extra_fields.fields import Base64ImageField
-from rest_framework.serializers import (
-    ModelSerializer,
-    SerializerMethodField,
-    ValidationError
-)
 
 from recipes.models import Ingredient, Recipe, Tag
+
+from rest_framework.serializers import (ModelSerializer, SerializerMethodField,
+                                        ValidationError)
+
 from .conf import MAX_LEN_USERS_CHARFIELD, MIN_USERNAME_LENGTH
-from .services import (
-    check_value_validate, is_hex_color,
-    recipe_amount_ingredients_set
-)
+from .services import (check_value_validate, is_hex_color,
+                       recipe_amount_ingredients_set)
 
 User = get_user_model()
 
@@ -64,6 +62,10 @@ class UserSerializer(ModelSerializer):
                 'Длина username допустима от '
                 f'{MIN_USERNAME_LENGTH} до {MAX_LEN_USERS_CHARFIELD}'
             )
+        if not username.isalpha():
+            raise ValidationError(
+                'В username допустимы только буквы.'
+            )
         return username.capitalize()
 
 
@@ -85,12 +87,8 @@ class UserSubscribeSerializer(UserSerializer):
         )
         read_only_fields = '__all__',
 
-    def get_is_subscribed(self, obj):
-        user = self.context['request'].user
-        return (
-            user.is_authenticated
-            and obj.subscribing.filter(user=user).exists()
-        )
+    def get_is_subscribed(*args):
+        return True
 
     def get_recipes_count(self, obj):
         return obj.recipes.count()
@@ -161,9 +159,9 @@ class RecipeSerializer(ModelSerializer):
         return user.carts.filter(id=obj.id).exists()
 
     def validate(self, data):
-        name = str(data['name']).strip()
-        tags = data['tags']
-        ingredients = data['ingredients']
+        name = str(self.initial_data.get('name')).strip()
+        tags = self.initial_data.get('tags')
+        ingredients = self.initial_data.get('ingredients')
         values_as_list = (tags, ingredients)
 
         for value in values_as_list:
@@ -178,10 +176,6 @@ class RecipeSerializer(ModelSerializer):
         valid_ingredients = []
         for ing in ingredients:
             ing_id = ing.get('id')
-            if ing_id in valid_ingredients:
-                raise ValidationError({
-                    'ingredients': 'Такой ингредиент уже выбран'
-                })
             ingredient = check_value_validate(ing_id, Ingredient)
 
             amount = ing.get('amount')
@@ -212,7 +206,12 @@ class RecipeSerializer(ModelSerializer):
 
         recipe.image = validated_data.get(
             'image', recipe.image)
-        super().update(recipe, validated_data)
+        recipe.name = validated_data.get(
+            'name', recipe.name)
+        recipe.text = validated_data.get(
+            'text', recipe.text)
+        recipe.cooking_time = validated_data.get(
+            'cooking_time', recipe.cooking_time)
 
         if tags:
             recipe.tags.clear()
@@ -222,4 +221,5 @@ class RecipeSerializer(ModelSerializer):
             recipe.ingredients.clear()
             recipe_amount_ingredients_set(recipe, ingredients)
 
+        recipe.save()
         return recipe

@@ -1,10 +1,12 @@
+from api import conf
+
 from django.contrib.auth.models import AbstractUser
-from django.db.models import CharField, EmailField, ManyToManyField
+from django.db.models import (CharField, CheckConstraint, EmailField,
+                              ManyToManyField, Q)
 from django.db.models.functions import Length
 from django.utils.translation import gettext_lazy as _
 
-from api import conf
-
+from .validators import LineValidator, MinLenValidator
 
 CharField.register_lookup(Length)
 
@@ -20,7 +22,11 @@ class Users(AbstractUser):
         verbose_name='Уникальный юзернейм',
         max_length=conf.MAX_LEN_USERS_CHARFIELD,
         unique=True,
-        help_text=conf.USERS_HELP_UNAME,
+        help_text=(conf.USERS_HELP_UNAME),
+        validators=(
+            MinLenValidator(min_len=conf.MIN_USERNAME_LENGTH),
+            LineValidator(),
+        ),
     )
     first_name = CharField(
         verbose_name='Имя',
@@ -48,6 +54,12 @@ class Users(AbstractUser):
         verbose_name = 'Пользователь'
         verbose_name_plural = 'Пользователи'
         ordering = ('username',)
+        constraints = (
+            CheckConstraint(
+                check=Q(username__length__gte=conf.MIN_USERNAME_LENGTH),
+                name='\nusername too short\n',
+            ),
+        )
 
     def __str__(self):
         return f'{self.username}: {self.email}'

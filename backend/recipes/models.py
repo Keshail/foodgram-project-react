@@ -1,13 +1,13 @@
-from django.contrib.auth import get_user_model
-from django.core.validators import MaxValueValidator, MinValueValidator
-from django.db.models import (CASCADE, CharField, DateTimeField, ForeignKey,
-                              ImageField, ManyToManyField, Model,
-                              PositiveSmallIntegerField, TextField,
-                              UniqueConstraint)
-from django.db.models.functions import Length
-
 from api.conf import MAX_LEN_RECIPES_CHARFIELD, MAX_LEN_RECIPES_TEXTFIELD
 
+from django.contrib.auth import get_user_model
+from django.core.validators import MaxValueValidator, MinValueValidator
+from django.db.models import (CASCADE, CharField, CheckConstraint,
+                              DateTimeField, ForeignKey, ImageField,
+                              ManyToManyField, Model,
+                              PositiveSmallIntegerField, Q, TextField,
+                              UniqueConstraint)
+from django.db.models.functions import Length
 
 CharField.register_lookup(Length)
 
@@ -37,6 +37,20 @@ class Tag(Model):
         verbose_name = 'Тэг'
         verbose_name_plural = 'Тэги'
         ordering = ('name', )
+        constraints = (
+            CheckConstraint(
+                check=Q(name__length__gt=0),
+                name='\n%(app_label)s_%(class)s_name is empty\n',
+            ),
+            CheckConstraint(
+                check=Q(color__length__gt=0),
+                name='\n%(app_label)s_%(class)s_color is empty\n',
+            ),
+            CheckConstraint(
+                check=Q(slug__length__gt=0),
+                name='\n%(app_label)s_%(class)s_slug is empty\n',
+            ),
+        )
 
     def __str__(self) -> str:
         return f'{self.name} (цвет: {self.color})'
@@ -44,7 +58,7 @@ class Tag(Model):
 
 class Ingredient(Model):
     name = CharField(
-        verbose_name='Ингредиент',
+        verbose_name='Ингридиент',
         max_length=MAX_LEN_RECIPES_CHARFIELD,
     )
     measurement_unit = CharField(
@@ -53,9 +67,23 @@ class Ingredient(Model):
     )
 
     class Meta:
-        verbose_name = 'Ингредиент'
-        verbose_name_plural = 'Ингредиенты'
+        verbose_name = 'Ингридиент'
+        verbose_name_plural = 'Ингридиенты'
         ordering = ('name', )
+        constraints = (
+            UniqueConstraint(
+                fields=('name', 'measurement_unit'),
+                name='unique_for_ingredient'
+            ),
+            CheckConstraint(
+                check=Q(name__length__gt=0),
+                name='\n%(app_label)s_%(class)s_name is empty\n',
+            ),
+            CheckConstraint(
+                check=Q(measurement_unit__length__gt=0),
+                name='\n%(app_label)s_%(class)s_measurement_unit is empty\n',
+            ),
+        )
 
     def __str__(self) -> str:
         return f'{self.name} {self.measurement_unit}'
@@ -124,6 +152,16 @@ class Recipe(Model):
         verbose_name = 'Рецепт'
         verbose_name_plural = 'Рецепты'
         ordering = ('-pub_date', )
+        constraints = (
+            UniqueConstraint(
+                fields=('name', 'author'),
+                name='unique_for_author'
+            ),
+            CheckConstraint(
+                check=Q(name__length__gt=0),
+                name='\n%(app_label)s_%(class)s_name is empty\n',
+            ),
+        )
 
     def __str__(self) -> str:
         return f'{self.name}. Автор: {self.author.username}'
@@ -132,13 +170,13 @@ class Recipe(Model):
 class AmountIngredient(Model):
     recipe = ForeignKey(
         verbose_name='В каких рецептах',
-        related_name='recipes',
+        related_name='ingredient',
         to=Recipe,
         on_delete=CASCADE,
     )
     ingredients = ForeignKey(
         verbose_name='Связанные ингредиенты',
-        related_name='ingredients',
+        related_name='recipe',
         to=Ingredient,
         on_delete=CASCADE,
     )
@@ -156,8 +194,8 @@ class AmountIngredient(Model):
     )
 
     class Meta:
-        verbose_name = 'Ингредиент'
-        verbose_name_plural = 'Количество Ингредиентов'
+        verbose_name = 'Ингридиент'
+        verbose_name_plural = 'Количество ингридиентов'
         ordering = ('recipe', )
         constraints = (
             UniqueConstraint(

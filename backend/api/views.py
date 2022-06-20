@@ -1,29 +1,27 @@
+from datetime import datetime as dt
+from urllib.parse import unquote
+
 from django.contrib.auth import get_user_model
 from django.db.models import F, Sum
 from django.http.response import HttpResponse
-from django.utils import timezone
-from django.shortcuts import get_object_or_404
-from django_filters.rest_framework import DjangoFilterBackend
+
 from djoser.views import UserViewSet as DjoserUserViewSet
+
+from recipes.models import AmountIngredient, Ingredient, Recipe, Tag
+
 from rest_framework.decorators import action
 from rest_framework.response import Response
-from rest_framework import status
 from rest_framework.status import HTTP_400_BAD_REQUEST, HTTP_401_UNAUTHORIZED
 from rest_framework.viewsets import ModelViewSet, ReadOnlyModelViewSet
 
-from recipes.models import AmountIngredient, Ingredient, Recipe, Tag
 from . import conf
-from .filters import IngredientFilter, RecipeFilter
 from .mixins import AddDelViewMixin
 from .paginators import PageLimitPagination
 from .permissions import AdminOrReadOnly, AuthorStaffOrReadOnly
-from .serializers import (
-    IngredientSerializer,
-    RecipeSerializer,
-    ShortRecipeSerializer,
-    TagSerializer,
-    UserSubscribeSerializer
-)
+from .serializers import (IngredientSerializer, RecipeSerializer,
+                          ShortRecipeSerializer, TagSerializer,
+                          UserSubscribeSerializer)
+from .services import incorrect_layout
 
 User = get_user_model()
 
@@ -59,8 +57,23 @@ class IngredientViewSet(ReadOnlyModelViewSet):
     queryset = Ingredient.objects.all()
     serializer_class = IngredientSerializer
     permission_classes = (AdminOrReadOnly,)
-    filter_backends = [IngredientFilter]
-    search_fields = ('^name',)
+
+    def get_queryset(self):
+        name = self.request.query_params.get(conf.SEARCH_ING_NAME)
+        queryset = self.queryset
+        if name:
+            if name[0] == '%':
+                name = unquote(name)
+            else:
+                name = name.translate(incorrect_layout)
+            name = name.lower()
+            stw_queryset = list(queryset.filter(name__startswith=name))
+            cnt_queryset = queryset.filter(name__contains=name)
+            stw_queryset.extend(
+                [i for i in cnt_queryset if i not in stw_queryset]
+            )
+            queryset = stw_queryset
+        return queryset
 
 
 class RecipeViewSet(ModelViewSet, AddDelViewMixin):
@@ -69,37 +82,36 @@ class RecipeViewSet(ModelViewSet, AddDelViewMixin):
     permission_classes = (AuthorStaffOrReadOnly,)
     pagination_class = PageLimitPagination
     add_serializer = ShortRecipeSerializer
-    filter_backends = [DjangoFilterBackend]
-    filterset_class = RecipeFilter
 
-    def get_serializer_class(self):
-        if self.action in ('list', 'retrieve'):
-            return ShortRecipeSerializer
-        return RecipeSerializer
+    def get_queryset(self):
+        queryset = self.queryset
 
-    def perform_create(self, serializer):
-        serializer.save(author=self.request.user)
+        tags = self.request.query_params.getlist(conf.TAGS)
+        if tags:
+            queryset = queryset.filter(
+                tags__slug__in=tags).distinct()
 
-    def perform_update(self, serializer):
-        serializer.save(author=self.request.user)
+        author = self.request.query_params.get(conf.AUTHOR)
+        if author:
+            queryset = queryset.filter(author=author)
 
-    def add(self, request, pk, serializers):
-        data = {'user': request.user.id, 'recipe': pk}
-        serializer = serializers(
-            data=data, context={'request': request}
-        )
-        serializer.is_valid(raise_exception=True)
-        serializer.save()
-        return Response(serializer.data, status=status.HTTP_201_CREATED)
+        user = self.request.user
+        if user.is_anonymous:
+            return queryset
 
-    def cancel(self, request, pk, model):
-        user = request.user
-        recipe = get_object_or_404(Recipe, id=pk)
-        obj_cart = get_object_or_404(
-            model, user=user, recipe=recipe
-        )
-        obj_cart.delete()
-        return Response(status=status.HTTP_204_NO_CONTENT)
+        is_in_shopping = self.request.query_params.get(conf.SHOP_CART)
+        if is_in_shopping in conf.SYMBOL_TRUE_SEARCH:
+            queryset = queryset.filter(cart=user.id)
+        elif is_in_shopping in conf.SYMBOL_FALSE_SEARCH:
+            queryset = queryset.exclude(cart=user.id)
+
+        is_favorited = self.request.query_params.get(conf.FAVORITE)
+        if is_favorited in conf.SYMBOL_TRUE_SEARCH:
+            queryset = queryset.filter(favorite=user.id)
+        if is_favorited in conf.SYMBOL_FALSE_SEARCH:
+            queryset = queryset.exclude(favorite=user.id)
+
+        return queryset
 
     @action(methods=conf.ACTION_METHODS, detail=True)
     def favorite(self, request, pk):
@@ -119,16 +131,16 @@ class RecipeViewSet(ModelViewSet, AddDelViewMixin):
         ).values(
             ingredient=F('ingredients__name'),
             measure=F('ingredients__measurement_unit')
-        ).annotate(total=Sum('total'))
+        ).annotate(amount=Sum('amount'))
 
         filename = f'{user.username}_shopping_list.txt'
         shopping_list = (
             f'Список покупок для:\n\n{user.first_name}\n\n'
-            f'{timezone.now().strftime(conf.DATE_TIME_FORMAT)}\n\n'
+            f'{dt.now().strftime(conf.DATE_TIME_FORMAT)}\n\n'
         )
         for ing in ingredients:
             shopping_list += (
-                f'{ing["ingredient"]}: {ing["total"]} {ing["measure"]}\n'
+                f'{ing["ingredient"]}: {ing["amount"]} {ing["measure"]}\n'
             )
 
         shopping_list += '\n\nПосчитано в Foodgram'
